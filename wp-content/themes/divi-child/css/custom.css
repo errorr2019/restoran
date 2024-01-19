@@ -1,0 +1,334 @@
+
+@font-face {
+    font-family: Nunito;
+    font-weight: 400;
+    src: url(fonts/nunito-sans/static/NunitoSans_7pt-Regular.ttf);
+}
+
+@font-face {
+    font-family: pacifico;
+    font-weight: 400;
+    src: url(fonts/pacifico/Pacifico-Regular.ttf);
+}
+
+
+/* ---------------font-families-------------- */
+
+
+.our_menu-section{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+
+.our_menu_row {
+    /* width: calc(36.33% - 20px); */
+    /* margin-bottom: 20px; */
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); */
+}
+
+.our_menu_col {
+    display: flex;
+}
+
+.menu_feature-img {
+    margin: 0px px 10px 10px;
+    padding: 10px 10px 10px 10px;
+}
+
+.our_menu_content h2{
+    font-family: "Nunito",sans-serif;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #0F172B;
+    font-size: 1.25rem;
+    margin-bottom: -10px;
+    /* border-bottom: 2px solid black; */
+}
+
+.our_menu_content {
+    margin: 0px 0px 0px 12px;
+}
+
+p.menu-bio {
+    font-family: "Heebo",sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    font-style: italic;
+    color: #666565;
+}
+
+p.menu-bio {
+    margin-top: 9px;
+}
+
+.menu-underline {
+    border-bottom: 1px solid black;
+    width: 360px;
+}
+
+/* ---------------abuot-page------------------------ */
+
+.about-image-2{
+    vertical-align: middle;
+    width: 75% !important;
+    max-width: 100%;
+    height: auto;
+    margin-top: 25%;
+    margin-right: 30%;
+
+}
+
+.about-image-3{
+    vertical-align: middle;
+    width: 75% !important;
+    max-width: 100%;
+    height: auto;
+    margin-top: 25%;
+    margin-right: 30%;
+
+}
+
+.et_pb_module.et_pb_image.et_pb_image_1.about-image-3 {
+    margin: -11px 4px 11px 56px;
+}
+
+.et_pb_module.et_pb_image.et_pb_image_2.about-image-2 {
+    margin: 58px 0px 10px -45px;
+}
+
+.et_pb_module.et_pb_image.et_pb_image_3.about-image-4 {
+    margin: 18px 0px 0px -45px;
+}
+
+
+.abuotus-images-section{
+    position: relative;
+}
+
+
+.aboutmain{
+    color: #fea116! important;
+    position: relative;
+    display: inline-block;
+    font-family: 'pacifico';
+    text-align: left !important;
+    font-weight: 400 !important;
+    font-size: 40px;
+}
+
+.aboutheading{
+    color: red;
+}
+
+.about-firsttext{
+    font-family: "Heebo",sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #666565;
+}
+
+.about-firsttext p {
+    padding-bottom: 2em;
+}
+
+
+
+/* ---------Cpt our team --------second part of about page--------------------- */
+
+.about_our_team-section{
+    display: flex;
+    justify-content: center;
+}
+
+.about_our_team_row {
+    margin: -28px 45px;
+    /* font-size: 18px;
+    line-height: 29px;
+    box-shadow: 0 0 45px rgba(0, 0, 0, .08);
+    height: calc(100% - 38px);
+    transition: .5s; */
+}
+
+.about-cpt-bg {
+    /* background-color: #f6f6f6; */
+    background-color: #dfd9ae;
+    padding: 26px 32px 24px 29px;
+    max-width: 208px;
+    width: 211px;
+    height: 335px;
+    border-radius: 4px;
+}
+
+.about_our_team_content {
+    text-align: center;
+    font-size: 50px;
+    font-weight: 600;
+    font-family: "Nunito",sans-serif;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #0F172B;
+    margin: 10px 10px 10px 10px;
+}
+
+p.about_our_team_bio {
+    font-size: 14px;
+    margin: 1px 24px;
+    line-height: 27px;
+    font-weight: 500;
+    /* font-family: "Heebo",sans-serif; */
+    /* font-size: 1rem; */
+    /* font-weight: 400; */
+    line-height: 1.5;
+    color: #666565;
+}
+
+
+.about-team-heading{
+    color:#FEA116 !important;
+    text-decoration: none;
+    font-family:"pacifico";
+    font-style: normal;
+    font-size: 40px;
+    font-weight: 400;
+    /* margin:10px 0px 10px 0px ; */
+    font-style: italic;
+    /* width: 1px;  */
+    height: 1em; 
+    line-height: 1.2;
+    text-align: center;
+}
+.about-team-heading::after{
+    content: '\23E4';
+   
+ 
+}
+.about-team-text{
+    font-family: 'Nunito';
+    font-weight: 800;
+    line-height: 1.2;
+    color: #0F172B;
+    text-align: center;
+}
+
+
+/* ========================================================= */
+
+/* .blog-heading{
+    text-align: center;
+    font-size: 60px;
+    font-weight: 600;
+}
+.second-heading{
+    font-size: 60px;
+    text-align: center;
+    font-weight: 400;
+    line-height: 1.1;
+    margin-top: 60px;
+}
+.content1{
+    font-size: 18px;
+    margin: 40px 24px;
+    line-height: 27px;
+    font-weight: 500;
+}
+.section-content{
+    margin: -28px 45px;
+    font-size: 18px;
+    line-height: 29px;
+    box-shadow: 0 0 45px rgba(0, 0, 0, .08);
+    height: calc(100% - 38px);
+    transition: .5s;
+}
+.section-content h2{
+    margin-top: 15px;
+}
+.our_players-section:hover img {
+    transform: scale(1.1);
+    transition: .5s;
+}
+.our_players-section:hover {
+    height: 100%;
+}
+
+.section-img img{
+    height: 300px;
+  
+    object-fit: cover;
+    width: 50%;
+}
+
+.mm_blog_section{
+    display: flex;
+    justify-content: space-between;
+}
+.mm_blog_section_row{
+ 
+    width: calc(33.33% - 20px);
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    
+}
+.mm_blog_section_row img{
+    max-height: 230px;
+    width:630px;
+}
+.blog-content{
+    padding: 20px;
+    max-height: 330px;
+
+}
+.btn{
+    background-color: #3a99da; 
+    border: none;
+    color: white;
+    padding: 15px 62px;
+    text-align: center;
+    font-style: bold;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-top: 20px;
+    width: 300px;
+  
+}
+
+.mm_blog_title{
+    margin-bottom: 30px;
+  
+}
+.mm_blog_title h2{
+    font-size:large;
+    font-weight: 700;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.mm_blog_title p{
+    margin-bottom: 50px;
+}
+
+.our_players-section{
+    display: flex;
+
+}
+.our_players_col{
+    width: 230px;
+    margin: 19px;
+    text-align: center;
+    line-height: 24px;
+} */
+
+/* -------------------home---------------------- */
+
+.home-section{
+    background-image: url(images/home-bg.jpg);
+    background-position:cover ;
+    background-repeat: no-repeat ;
+    background-size: 14px ;
+
+}
