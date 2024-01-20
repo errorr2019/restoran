@@ -16,7 +16,7 @@
 function et_theme_builder_filter_resolve_default_dynamic_content( $content, $name, $settings, $post_id, $context, $overrides ) {
 	$post_type = get_post_type( $post_id );
 
-	if ( ! et_theme_builder_is_layout_post_type( $post_type ) ) {
+	if ( ! et_theme_builder_is_layout_post_type( $post_type ) && ! is_et_theme_builder_template_preview() ) {
 		return $content;
 	}
 
@@ -82,7 +82,7 @@ function et_theme_builder_filter_resolve_default_dynamic_content( $content, $nam
 			$custom_format = $_->array_get( $settings, 'custom_date_format', $def( $post_id, $name, 'custom_date_format' ) );
 
 			if ( 'default' === $format ) {
-				$format = get_option( 'date_format' );
+				$format = strval( get_option( 'date_format' ) );
 			}
 
 			if ( 'custom' === $format ) {

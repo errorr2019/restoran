@@ -1,6 +1,13 @@
 <?php
 
 class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
+	/**
+	 * Should render module in Visual Builder.
+	 *
+	 * @var bool
+	 */
+	public $no_render;
+
 	function init() {
 		$this->name             = esc_html__( 'Accordion', 'et_builder' );
 		$this->plural           = esc_html__( 'Accordions', 'et_builder' );
@@ -229,6 +236,17 @@ class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
 				'mobile_options' => true,
 				'sticky'         => true,
 			),
+			'toggle_icon'                    => array(
+				'label'          => esc_html__( 'Closed Icon', 'et_builder' ),
+				'toggle_slug'    => 'icon',
+				'type'           => 'select_icon',
+				'class'          => array( 'et-pb-font-icon' ),
+				'description'    => esc_html__( 'Choose an icon to display with your blurb.', 'et_builder' ),
+				'mobile_options' => true,
+				'hover'          => 'tabs',
+				'sticky'         => true,
+				'tab_slug'       => 'advanced',
+			),
 			'icon_color'                     => array(
 				'label'          => esc_html__( 'Icon Color', 'et_builder' ),
 				'description'    => esc_html__( 'Here you can define a custom color for the toggle icon.', 'et_builder' ),
@@ -282,4 +300,6 @@ class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Accordion_Item();
+if ( et_builder_should_load_all_module_data() ) {
+	new ET_Builder_Module_Accordion_Item();
+}

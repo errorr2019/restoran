@@ -116,6 +116,7 @@ function show_menu($atts){
 
     
 
+
     
     $terms = get_terms(array(
         'taxonomy'   => 'menu_category',
@@ -133,6 +134,7 @@ function show_menu($atts){
     else :
         echo '<p>No menu categories found</p>';
     endif;
+    
     
     // Check if a category is clicked
     if (is_tax('menu_category')) {

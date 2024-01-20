@@ -47,6 +47,10 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 						'title'    => esc_html__( 'Logo', 'et_builder' ),
 						'priority' => 59,
 					),
+					'cart_quantity'  => array(
+						'title'    => esc_html__( 'Cart Quantity Text', 'et_builder' ),
+						'priority' => 69,
+					),
 				),
 			),
 			'custom_css' => array(
@@ -65,7 +69,7 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 
 		$this->advanced_fields = array(
 			'fonts'      => array(
-				'menu' => array(
+				'menu'          => array(
 					'label'           => esc_html__( 'Menu', 'et_builder' ),
 					'css'             => array(
 						'main'         => "{$this->main_css_element} ul li a",
@@ -89,6 +93,62 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 							'min'  => '0',
 							'max'  => '8',
 							'step' => '1',
+						),
+					),
+					'hide_text_align' => true,
+				),
+				'cart_quantity' => array(
+					'label'           => esc_html__( 'Cart Quantity', 'et_builder' ),
+					'css'             => array(
+						'main' => "{$this->main_css_element} .et_pb_menu__icon.et_pb_menu__icon__with_count .et_pb_menu__cart-count",
+					),
+					'font'            => array(
+						'mobile_options' => false,
+						'show_if'        => array(
+							'show_cart_quantity' => 'on',
+						),
+					),
+					'line_height'     => array(
+						'default'        => '1em',
+						'mobile_options' => false,
+						'show_if'        => array(
+							'show_cart_quantity' => 'on',
+						),
+					),
+					'font_size'       => array(
+						'default'        => '14px',
+						'mobile_options' => false,
+						'range_settings' => array(
+							'min'  => '12',
+							'max'  => '24',
+							'step' => '1',
+						),
+						'show_if'        => array(
+							'show_cart_quantity' => 'on',
+						),
+					),
+					'letter_spacing'  => array(
+						'default'        => '0px',
+						'mobile_options' => false,
+						'range_settings' => array(
+							'min'  => '0',
+							'max'  => '8',
+							'step' => '1',
+						),
+						'show_if'        => array(
+							'show_cart_quantity' => 'on',
+						),
+					),
+					'text_color'      => array(
+						'mobile_options' => false,
+						'show_if'        => array(
+							'show_cart_quantity' => 'on',
+						),
+					),
+					'text_shadow'     => array(
+						'mobile_options' => false,
+						'show_if'        => array(
+							'show_cart_quantity' => 'on',
 						),
 					),
 					'hide_text_align' => true,
@@ -383,6 +443,27 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				'toggle_slug'     => 'attributes',
 				'dynamic_content' => 'text',
 			),
+			'logo_width'                      => array(
+				'label'           => esc_html__( 'Logo Width', 'et_builder' ),
+				'description'     => esc_html__( 'Adjust the width of the logo.', 'et_builder' ),
+				'type'            => 'range',
+				'option_category' => 'layout',
+				'tab_slug'        => 'advanced',
+				'toggle_slug'     => 'width',
+				'mobile_options'  => true,
+				'validate_unit'   => true,
+				'allowed_values'  => et_builder_get_acceptable_css_string_values( 'width' ),
+				'default'         => 'auto',
+				'default_unit'    => '%',
+				'range_settings'  => array(
+					'min'  => '0',
+					'max'  => '100',
+					'step' => '1',
+				),
+				'responsive'      => true,
+				'hover'           => 'tabs',
+				'sticky'          => true,
+			),
 			'logo_max_width'                  => array(
 				'label'           => esc_html__( 'Logo Max Width', 'et_builder' ),
 				'description'     => esc_html__( 'Adjust the maximum width of the logo.', 'et_builder' ),
@@ -391,7 +472,6 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				'tab_slug'        => 'advanced',
 				'toggle_slug'     => 'width',
 				'mobile_options'  => true,
-				'sticky'          => true,
 				'validate_unit'   => true,
 				'allowed_values'  => et_builder_get_acceptable_css_string_values( 'max-width' ),
 				'default'         => '100%',
@@ -403,6 +483,28 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				),
 				'responsive'      => true,
 				'hover'           => 'tabs',
+				'sticky'          => true,
+			),
+			'logo_height'                     => array(
+				'label'           => esc_html__( 'Logo Height', 'et_builder' ),
+				'description'     => esc_html__( 'Adjust the height of the logo.', 'et_builder' ),
+				'type'            => 'range',
+				'option_category' => 'layout',
+				'tab_slug'        => 'advanced',
+				'toggle_slug'     => 'width',
+				'mobile_options'  => true,
+				'validate_unit'   => true,
+				'allowed_values'  => et_builder_get_acceptable_css_string_values( 'height' ),
+				'default'         => 'auto',
+				'default_unit'    => 'px',
+				'range_settings'  => array(
+					'min'  => '0',
+					'max'  => '200',
+					'step' => '1',
+				),
+				'responsive'      => true,
+				'hover'           => 'tabs',
+				'sticky'          => true,
 			),
 			'logo_max_height'                 => array(
 				'label'           => esc_html__( 'Logo Max Height', 'et_builder' ),
@@ -439,6 +541,21 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				'sticky'          => true,
 				'responsive'      => true,
 				'hover'           => 'tabs',
+				'affects'         => array( 'show_cart_quantity' ),
+			),
+			'show_cart_quantity'              => array(
+				'label'           => esc_html__( 'Show Cart Quantity', 'et_builder' ),
+				'type'            => 'yes_no_button',
+				'option_category' => 'layout',
+				'options'         => array(
+					'on'  => et_builder_i18n( 'Yes' ),
+					'off' => et_builder_i18n( 'No' ),
+				),
+				'default'         => 'off',
+				'toggle_slug'     => 'elements',
+				'show_if'         => array(
+					'show_cart_icon' => 'on',
+				),
 			),
 			'show_search_icon'                => array(
 				'label'           => esc_html__( 'Show Search Icon', 'et_builder' ),
@@ -564,7 +681,9 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 		$fields['dropdown_menu_text_color']        = array( 'color' => "%%order_class%%.{$menu_slug} .nav li ul a" );
 		$fields['dropdown_menu_active_link_color'] = array( 'color' => "%%order_class%%.{$menu_slug} .nav li ul li.current-menu-item a" );
 
-		$fields['logo_max_width']  = array( 'max-width' => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap .et_pb_menu__logo, %%order_class%% .et_pb_menu__logo-slot' );
+		$fields['logo_width']      = array( 'width' => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap, %%order_class%% .et_pb_menu__logo-slot' );
+		$fields['logo_max_width']  = array( 'max-width' => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap, %%order_class%% .et_pb_menu__logo-slot' );
+		$fields['logo_height']     = array( 'height' => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap .et_pb_menu__logo img, %%order_class%% .et_pb_menu__logo-slot .et_pb_menu__logo-wrap img' );
 		$fields['logo_max_height'] = array( 'max-height' => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap .et_pb_menu__logo img, %%order_class%% .et_pb_menu__logo-slot .et_pb_menu__logo-wrap img' );
 
 		$fields['menu_icon_color']   = array(
@@ -740,14 +859,56 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 			ET_Builder_Element::set_style( $render_slug, $el_style );
 		}
 
+		$logo_width      = $this->props['logo_width'];
+		$logo_height     = $this->props['logo_height'];
+		$logo_max_height = $this->props['logo_max_height'];
+
+		// Only height or max-height is set, no width set.
+		if ( 'auto' === $logo_width && 'auto' !== $logo_height || 'none' !== $logo_max_height ) {
+			$el_style = array(
+				'selector'    => '%%order_class%% .et_pb_menu__logo-wrap .et_pb_menu__logo img',
+				'declaration' => 'width: auto;',
+			);
+			ET_Builder_Element::set_style( $render_slug, $el_style );
+		}
+
+		$logo_width_selector  = '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap, %%order_class%% .et_pb_menu__logo-slot';
+		$logo_height_selector = '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap .et_pb_menu__logo img, %%order_class%% .et_pb_menu__logo-slot .et_pb_menu__logo-wrap img';
+
+		// Width.
+		$this->generate_styles(
+			array(
+				'base_attr_name'                  => 'logo_width',
+				'selector'                        => $logo_width_selector,
+				'hover_pseudo_selector_location'  => 'suffix',
+				'sticky_pseudo_selector_location' => 'prefix',
+				'css_property'                    => 'width',
+				'render_slug'                     => $render_slug,
+				'type'                            => 'range',
+			)
+		);
+
 		// Max width.
 		$this->generate_styles(
 			array(
 				'base_attr_name'                  => 'logo_max_width',
-				'selector'                        => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap .et_pb_menu__logo, %%order_class%% .et_pb_menu__logo-slot',
+				'selector'                        => $logo_width_selector,
 				'hover_pseudo_selector_location'  => 'suffix',
 				'sticky_pseudo_selector_location' => 'prefix',
 				'css_property'                    => 'max-width',
+				'render_slug'                     => $render_slug,
+				'type'                            => 'range',
+			)
+		);
+
+		// Height.
+		$this->generate_styles(
+			array(
+				'base_attr_name'                  => 'logo_height',
+				'selector'                        => $logo_height_selector,
+				'hover_pseudo_selector_location'  => 'suffix',
+				'sticky_pseudo_selector_location' => 'prefix',
+				'css_property'                    => 'height',
 				'render_slug'                     => $render_slug,
 				'type'                            => 'range',
 			)
@@ -757,7 +918,7 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 		$this->generate_styles(
 			array(
 				'base_attr_name'                  => 'logo_max_height',
-				'selector'                        => '%%order_class%% .et_pb_row > .et_pb_menu__logo-wrap .et_pb_menu__logo img, %%order_class%% .et_pb_menu__logo-slot .et_pb_menu__logo-wrap img',
+				'selector'                        => $logo_height_selector,
 				'hover_pseudo_selector_location'  => 'suffix',
 				'sticky_pseudo_selector_location' => 'prefix',
 				'css_property'                    => 'max-height',
@@ -888,8 +1049,6 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 		$logo_image_attrs = array(
 			'src'    => '{{logo}}',
 			'alt'    => $logo_alt,
-			'height' => 'auto',
-			'width'  => 'auto',
 		);
 
 		$logo_image_attachment_class = et_pb_media_options()->get_image_attachment_class( $this->props, 'logo' );
@@ -950,10 +1109,25 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 			return '';
 		}
 
-		$url    = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : WC()->cart->get_cart_url();
-		$output = sprintf(
-			'<a href="%1$s" class="et_pb_menu__icon et_pb_menu__cart-button"></a>',
-			esc_url( $url )
+		$url          = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : WC()->cart->get_cart_url();
+		$show_count   = 'on' === self::$_->array_get( $this->props, 'show_cart_quantity', '' );
+		$items_number = $show_count ? WC()->cart->get_cart_contents_count() : 0;
+		$output       = sprintf(
+			'<a href="%1$s" class="et_pb_menu__icon et_pb_menu__cart-button%3$s">
+				%2$s
+			</a>',
+			esc_url( $url ),
+			$show_count ?
+				sprintf(
+					'<span class="et_pb_menu__cart-count">%1$s</span>',
+					esc_html(
+						sprintf(
+							_nx( '%1$s Item', '%1$s Items', $items_number, 'WooCommerce items number', 'Divi' ),
+							number_format_i18n( $items_number )
+						)
+					)
+				) : '',
+			$show_count ? ' et_pb_menu__icon__with_count' : ''
 		);
 
 		/**
@@ -1230,9 +1404,9 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 
 		$mobile_menu = sprintf(
 			'<div class="et_mobile_nav_menu">
-				<a href="#" class="mobile_nav closed%1$s">
+				<div class="mobile_nav closed%1$s">
 					<span class="mobile_menu_bar"></span>
-				</a>
+				</div>
 			</div>',
 			'upwards' === $submenu_direction ? ' et_pb_mobile_menu_upwards' : ''
 		);
@@ -1242,6 +1416,8 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				'<div%4$s class="%3$s"%2$s%7$s>
 					%6$s
 					%5$s
+					%13$s
+					%14$s
 					<div class="et_pb_row clearfix">
 						%8$s
 						<div class="et_pb_menu__wrap">
@@ -1266,13 +1442,17 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				et_core_esc_previously( $this->render_cart() ),
 				et_core_esc_previously( $this->render_search() ),
 				et_core_esc_previously( $mobile_menu ),
-				et_core_esc_previously( $this->render_search_form() )
+				et_core_esc_previously( $this->render_search_form() ),
+				et_core_esc_previously( $this->background_pattern() ), // #13
+				et_core_esc_previously( $this->background_mask() ) // #14
 			);
 		} else {
 			$output = sprintf(
 				'<div%4$s class="%3$s"%2$s%7$s>
 					%6$s
 					%5$s
+					%13$s
+					%14$s
 					<div class="et_pb_row clearfix">
 						%8$s
 						<div class="et_pb_menu__wrap">
@@ -1297,7 +1477,9 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 				et_core_esc_previously( $this->render_cart() ),
 				et_core_esc_previously( $this->render_search() ),
 				et_core_esc_previously( $mobile_menu ),
-				et_core_esc_previously( $this->render_search_form() )
+				et_core_esc_previously( $this->render_search_form() ),
+				et_core_esc_previously( $this->background_pattern() ), // #13
+				et_core_esc_previously( $this->background_mask() ) // #14
 			);
 		}
 
@@ -1305,4 +1487,6 @@ class ET_Builder_Module_Fullwidth_Menu extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Fullwidth_Menu();
+if ( et_builder_should_load_all_module_data() ) {
+	new ET_Builder_Module_Fullwidth_Menu();
+}

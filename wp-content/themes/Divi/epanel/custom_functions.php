@@ -25,13 +25,13 @@ function et_activate_features() {
 	}
 
 	/* activate shortcodes */
-	require_once TEMPLATEPATH . '/epanel/shortcodes/shortcodes.php';
+	require_once get_template_directory() . '/epanel/shortcodes/shortcodes.php';
 
 	/* activate page templates */
-	require_once TEMPLATEPATH . '/includes/page_templates/page_templates.php';
+	require_once get_template_directory() . '/includes/page_templates/page_templates.php';
 
 	/* import epanel settings */
-	require_once TEMPLATEPATH . '/includes/import_settings.php';
+	require_once get_template_directory() . '/includes/import_settings.php';
 }
 
 add_filter( 'widget_text', 'do_shortcode' );
@@ -187,21 +187,25 @@ function et_epanel_handle_custom_css_output( $css, $stylesheet ) {
 add_filter( 'wp_get_custom_css', 'et_epanel_handle_custom_css_output', 999, 2 );
 endif;
 
-/**
- * Gets option value from the single theme option, stored as an array in the database
- * if all options stored in one row.
- * Stores the serialized array with theme options into the global variable on the first function run on the page.
- *
- * If options are stored as separate rows in database, it simply uses get_option() function.
- *
- * @param string $option_name Theme option name.
- * @param string $default_value Default value that should be set if the theme option isn't set.
- * @param string $used_for_object "Object" name that should be translated into corresponding "object" if WPML is activated.
- * @return mixed Theme option value or false if not found.
- */
 if ( ! function_exists( 'et_get_option' ) ) {
-
-	function et_get_option( $option_name, $default_value = '', $used_for_object = '', $force_default_value = false, $is_global_setting = false, $global_setting_main_name = '', $global_setting_sub_name = '' ){
+	/**
+	 * Gets option value from the single theme option, stored as an array in the database
+	 * if all options stored in one row.
+	 * Stores the serialized array with theme options into the global variable on the first function run on the page.
+	 *
+	 * If options are stored as separate rows in database, it simply uses get_option() function.
+	 *
+	 * @param string $option_name Theme option name.
+	 * @param string $default_value Default value that should be set if the theme option isn't set.
+	 * @param string $used_for_object "Object" name that should be translated into corresponding "object" if WPML is activated.
+	 * @param bool   $force_default_value Is return provided default.
+	 * @param bool   $is_global_setting Is Global Setting.
+	 * @param string $global_setting_main_name Global Setting name.
+	 * @param string $global_setting_sub_name Global Setting sub name.
+	 * @param bool   $is_product_setting Product setting flag.
+	 * @return mixed Theme option value or false if not found.
+	 */
+	function et_get_option( $option_name, $default_value = '', $used_for_object = '', $force_default_value = false, $is_global_setting = false, $global_setting_main_name = '', $global_setting_sub_name = '', $is_product_setting = false ) {
 		global $et_theme_options, $shortname;
 
 		$et_one_row_option_name = '';
@@ -214,7 +218,11 @@ if ( ! function_exists( 'et_get_option' ) ) {
 			if ( false !== $et_global_setting && isset( $et_global_setting[ $global_setting_sub_name ] ) ) {
 				$option_value = $et_global_setting[ $global_setting_sub_name ];
 			}
-		} else if ( et_options_stored_in_one_row() ) {
+		} elseif ( $is_product_setting ) {
+			$et_product_setting_name = 'et_' . $shortname . '_' . $option_name;
+
+			$option_value = $force_default_value ? get_option( $et_product_setting_name, $default_value ) : get_option( $et_product_setting_name );
+		} elseif ( et_options_stored_in_one_row() ) {
 			$et_theme_options_name = 'et_' . $shortname;
 
 			if ( ! isset( $et_theme_options ) || is_customize_preview() ) {
@@ -228,7 +236,7 @@ if ( ! function_exists( 'et_get_option' ) ) {
 		}
 
 		// option value might be equal to false, so check if the option is not set in the database
-		if ( et_options_stored_in_one_row() && ! isset( $et_theme_options[ $option_name ] ) && ( ! empty( $default_value ) || $force_default_value ) ) {
+		if ( et_options_stored_in_one_row() && ! $is_product_setting && ! isset( $et_theme_options[ $option_name ] ) && ( ! empty( $default_value ) || $force_default_value ) ) {
 			$option_value = $default_value;
 		}
 
@@ -245,8 +253,20 @@ if ( ! function_exists( 'et_get_option' ) ) {
 }
 
 if ( ! function_exists( 'et_update_option' ) ) {
-
-	function et_update_option( $option_name, $new_value, $is_new_global_setting = false, $global_setting_main_name = '', $global_setting_sub_name = '' ){
+	/**
+	 * Update option value in theme option, stored as an array in the database
+	 * if all options stored in one row.
+	 *
+	 * If options are stored as separate rows in database, it simply uses update_option() function.
+	 *
+	 * @param string $option_name Theme option name.
+	 * @param string $new_value Theme option value.
+	 * @param bool   $is_new_global_setting Global setting flag.
+	 * @param string $global_setting_main_name Global setting name.
+	 * @param string $global_setting_sub_name Global setting sub name.
+	 * @param bool   $is_product_setting Product setting flag.
+	 */
+	function et_update_option( $option_name, $new_value, $is_new_global_setting = false, $global_setting_main_name = '', $global_setting_sub_name = '', $is_product_setting = false ) {
 		global $et_theme_options, $shortname;
 
 		if ( $is_new_global_setting && '' !== $global_setting_main_name && '' !== $global_setting_sub_name ) {
@@ -262,13 +282,18 @@ if ( ! function_exists( 'et_update_option' ) ) {
 
 			update_option( $global_setting_main_name, $global_setting );
 
-		} else if ( et_options_stored_in_one_row() ) {
+		} elseif ( $is_product_setting ) {
+			$et_product_setting_name = 'et_' . $shortname . '_' . $option_name;
+
+			// Update option and disable autoload of this option.
+			update_option( $et_product_setting_name, $new_value, false );
+		} elseif ( et_options_stored_in_one_row() ) {
 			$et_theme_options_name = 'et_' . $shortname;
 
 			if ( ! isset( $et_theme_options ) || is_customize_preview() ) {
 				$et_theme_options = get_option( $et_theme_options_name );
 			}
-			$et_theme_options[$option_name] = $new_value;
+			$et_theme_options[ $option_name ] = $new_value;
 
 			update_option( $et_theme_options_name, $et_theme_options );
 
@@ -300,8 +325,20 @@ if ( ! function_exists( 'et_delete_option' ) ) {
 
 /*this function allows for the auto-creation of post excerpts*/
 if ( ! function_exists( 'truncate_post' ) ) {
-
-	function truncate_post( $amount, $echo = true, $post = '', $strip_shortcodes = false ) {
+	/**
+	 * Truncate post content to generate post excerpt.
+	 *
+	 * @since ?? Add new paramter $is_words_length to cut the text based on words length.
+	 *
+	 * @param integer $amount           Amount of text that should be kept.
+	 * @param boolean $echo             Whether to print the output or not.
+	 * @param object  $post             Post object.
+	 * @param boolean $strip_shortcodes Whether to strip the shortcodes or not.
+	 * @param boolean $is_words_length  Whether to cut the text based on words length or not.
+	 *
+	 * @return string Generated post post excerpt.
+	 */
+	function truncate_post( $amount, $echo = true, $post = '', $strip_shortcodes = false, $is_words_length = false ) {
 		global $shortname;
 
 		if ( empty( $post ) ) global $post;
@@ -373,8 +410,20 @@ if ( ! function_exists( 'truncate_post' ) ) {
 				// $amount = $amount - 3;
 			}
 
-			// trim text to a certain number of characters, also remove spaces from the end of a string ( space counts as a character )
-			$truncate = rtrim( et_wp_trim_words( $truncate, $amount, '' ) );
+			$trim_words = '';
+
+			if ( $is_words_length ) {
+				// Reset `$echo_out` text because it will be added by wp_trim_words() with
+				// default WordPress `excerpt_more` text.
+				$echo_out     = '';
+				$excerpt_more = apply_filters( 'excerpt_more', ' [&hellip;]' );
+				$trim_words   = wp_trim_words( $truncate, $amount, $excerpt_more );
+			} else {
+				$trim_words = et_wp_trim_words( $truncate, $amount, '' );
+			}
+
+			// trim text to a certain number of characters, also remove spaces from the end of a string ( space counts as a character ).
+			$truncate = rtrim( $trim_words );
 
 			// remove the last word to make sure we display all words correctly
 			if ( ! empty( $echo_out ) ) {
@@ -498,7 +547,7 @@ if ( ! function_exists( 'get_thumbnail' ) ) {
 
 		$new_method = true;
 
-		if ( has_post_thumbnail( $post->ID ) ) {
+		if ( has_post_thumbnail( $post->ID ) || 'attachment' === $post->post_type ) {
 			$thumb_array['use_timthumb'] = false;
 
 			$et_fullpath = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'full' );
@@ -763,7 +812,7 @@ if ( ! function_exists( 'show_page_menu' ) ) {
 
 		//excluded pages
 		if ( $menupages = et_get_option( $shortname.'_menupages' ) ) {
-			$exclude_pages = implode( ",", $menupages );
+			$exclude_pages = is_array( $menupages ) ? implode( ',', $menupages ) : '';
 		}
 
 		//dropdown for pages
@@ -801,7 +850,7 @@ if ( ! function_exists( 'show_categories_menu' ) ) {
 
 		//excluded categories
 		if ( $menucats = et_get_option( $shortname.'_menucats' ) ) {
-			$exclude_cats = implode( ",", $menucats );
+			$exclude_cats = implode( ',', (array) $menucats );
 		}
 
 		//hide empty categories
@@ -1074,7 +1123,7 @@ if ( ! function_exists( 'elegant_titles_filter' ) ) {
 		#if the title is being displayed on the homepage
 		if ( ( is_home() || is_front_page() ) && ! elegant_is_blog_posts_page() ) {
 			if ( 'on' === et_get_option( $shortname . '_seo_home_title' ) ) {
-				$custom_title = et_get_option( $shortname . '_seo_home_titletext' );
+				$custom_title = strval( et_get_option( $shortname . '_seo_home_titletext' ) );
 			} else {
 				$seo_home_type = et_get_option( $shortname . '_seo_home_type' );
 				$seo_home_separate = et_get_option( $shortname . '_seo_home_separate' );
@@ -1289,6 +1338,11 @@ if ( ! function_exists( 'elegant_keywords' ) ) {
 if ( ! function_exists( 'elegant_canonical' ) ) {
 
 	function elegant_canonical() {
+		// Don't use ePanel SEO if 'rel_canonical' is registered for `wp_head`.
+		if ( has_action( 'embed_head', 'rel_canonical' ) && is_singular() ) {
+			return;
+		}
+
 		// Don't use ePanel SEO if a SEO plugin is active.
 		if ( et_is_seo_plugin_active() ) {
 			return;
@@ -1327,12 +1381,12 @@ add_action( 'wp_head', 'add_favicon' );
 function add_favicon(){
 	global $shortname;
 
-	$faviconUrl = et_get_option( $shortname.'_favicon' );
+	$favicon_url = et_get_option( $shortname . '_favicon' );
 
 	// If the `has_site_icon` function doesn't exist (ie we're on < WP 4.3) or if the site icon has not been set,
 	// and when we have a icon URL from theme option
-	if ( ( ! function_exists( 'has_site_icon' ) || ! has_site_icon() ) && '' !== $faviconUrl ) {
-		echo '<link rel="shortcut icon" href="' . esc_url( $faviconUrl ) . '" />';
+	if ( ( ! function_exists( 'has_site_icon' ) || ! has_site_icon() ) && ! empty( $favicon_url ) ) {
+		echo '<link rel="shortcut icon" href="' . esc_url( $favicon_url ) . '" />';
 	} elseif ( function_exists( 'has_site_icon' ) && has_site_icon() ) {
 		et_update_option( $shortname . '_favicon', '' );
 	}
@@ -1353,7 +1407,7 @@ function et_create_images_temp_folder(){
 	if ( false !== $et_images_temp_folder ) return;
 
 	$uploads_dir = wp_upload_dir();
-	$destination_dir = ( false === $uploads_dir['error'] ) ? path_join( $uploads_dir['basedir'], 'et_temp' ) : null;
+	$destination_dir = ( false === $uploads_dir['error'] ) ? path_join( $uploads_dir['basedir'], 'et_temp' ) : '';
 
 	if ( ! wp_mkdir_p( $destination_dir ) ) update_option( 'et_images_temp_folder', '' );
 	else {
@@ -1686,6 +1740,57 @@ function et_add_fullwidth_body_class( $classes ){
 	return $classes;
 }
 
+/**
+ * Enqueue legacy shortcodes' CSS.
+ *
+ * @since ??
+ */
+function et_add_legacy_shortcode_css() {
+	wp_enqueue_style(
+		'et-shortcodes-css',
+		ET_SHORTCODES_DIR . '/css/shortcodes-legacy.css',
+		array(),
+		ET_SHORTCODES_VERSION,
+		'all'
+	);
+
+	wp_enqueue_style(
+		'et-shortcodes-responsive-css',
+		ET_SHORTCODES_DIR . '/css/shortcodes_responsive.css',
+		false,
+		ET_SHORTCODES_VERSION,
+		'all'
+	);
+}
+
+/**
+ * Enqueue legacy shortcode JS.
+ *
+ * @return void
+ * @since ??
+ */
+function et_add_legacy_shortcode_js() {
+	global $themename;
+
+	$shortcode_strings_handle = apply_filters( 'et_shortcodes_strings_handle', 'et-shortcodes-js' );
+
+	wp_enqueue_script( 'et-shortcodes-js', ET_SHORTCODES_DIR . '/js/et_shortcodes_frontend.js', array( 'jquery' ), ET_SHORTCODES_VERSION, false );
+
+	wp_localize_script(
+		$shortcode_strings_handle,
+		'et_shortcodes_strings',
+		array(
+			'previous' => esc_html__( 'Previous', $themename ),
+			'next'     => esc_html__( 'Next', $themename ),
+		)
+	);
+}
+
+/**
+ * Enqueue responsive shortcode CSS in legacy themes when the ePanel option is enabled.
+ *
+ * @since ??
+ */
 function et_add_responsive_shortcodes_css() {
 	global $shortname;
 

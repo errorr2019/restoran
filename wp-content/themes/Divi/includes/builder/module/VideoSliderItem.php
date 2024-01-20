@@ -206,6 +206,17 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 				'sticky'           => true,
 				'hover'            => 'tabs',
 			),
+			'font_icon'          => array(
+				'label'          => esc_html__( 'Icon', 'et_builder' ),
+				'toggle_slug'    => 'arrows_color',
+				'type'           => 'select_icon',
+				'class'          => array( 'et-pb-font-icon' ),
+				'description'    => esc_html__( 'Choose an icon to display with your blurb.', 'et_builder' ),
+				'mobile_options' => true,
+				'hover'          => 'tabs',
+				'sticky'         => true,
+				'tab_slug'       => 'advanced',
+			),
 		);
 		return $fields;
 	}
@@ -251,9 +262,18 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 		} else {
 			if ( false !== et_pb_check_oembed_provider( esc_url( $args['src'] ) ) ) {
 				add_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
-				// Save thumbnail
+				// Save thumbnail.
 				$thumbnail_track_output = et_builder_get_oembed( esc_url( $args['src'] ), 'image', true );
-				// Set back to normal
+				// Set back to normal.
+				remove_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
+				return $thumbnail_track_output;
+			} elseif ( false !== et_pb_validate_youtube_url( esc_url( $args['src'] ) ) ) {
+				$args['src'] = et_pb_normalize_youtube_url( esc_url( $args['src'] ) );
+
+				add_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
+				// Save thumbnail.
+				$thumbnail_track_output = et_builder_get_oembed( esc_url( $args['src'] ), 'image', true );
+				// Set back to normal.
 				remove_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
 				return $thumbnail_track_output;
 			} else {
@@ -269,6 +289,10 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 
 		$args = wp_parse_args( $args, $defaults );
 
+		if ( false !== et_pb_validate_youtube_url( esc_url( $args['src'] ) ) ) {
+			$args['src'] = et_pb_normalize_youtube_url( esc_url( $args['src'] ) );
+		}
+
 		return et_pb_check_oembed_provider( esc_url( $args['src'] ) );
 	}
 
@@ -279,11 +303,16 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 
 		$args = wp_parse_args( $args, $defaults );
 
-		// Save thumbnail
+		if ( false !== et_pb_validate_youtube_url( esc_url( $args['src'] ) ) ) {
+			$args['src'] = et_pb_normalize_youtube_url( esc_url( $args['src'] ) );
+		}
+
+		// Save thumbnail.
 		$thumbnail_track_output = et_builder_get_oembed( esc_url( $args['src'] ), 'image', true );
 
 		return $thumbnail_track_output;
 	}
+
 
 	static function get_video( $args = array(), $conditional_tags = array(), $current_page = array() ) {
 		$defaults = array(
@@ -297,6 +326,9 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 
 		if ( false !== et_pb_check_oembed_provider( esc_url( $args['src'] ) ) ) {
 			$video_src = et_builder_get_oembed( esc_url( $args['src'] ) );
+		} elseif ( false !== et_pb_validate_youtube_url( esc_url( $args['src'] ) ) ) {
+			$args['src'] = et_pb_normalize_youtube_url( esc_url( $args['src'] ) );
+			$video_src   = et_builder_get_oembed( esc_url( $args['src'] ) );
 		} else {
 			$video_src = sprintf(
 				'
@@ -350,6 +382,21 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 				'important'                       => true,
 				'render_slug'                     => $render_slug,
 				'type'                            => 'color',
+			)
+		);
+
+		// Play Icon Styles.
+		$this->generate_styles(
+			array(
+				'utility_arg'    => 'icon_font_family_and_content',
+				'render_slug'    => $render_slug,
+				'base_attr_name' => 'font_icon',
+				'important'      => true,
+				'selector'       => '%%order_class%%.et_pb_slide .et_pb_video_play:before',
+				'processor'      => array(
+					'ET_Builder_Module_Helper_Style_Processor',
+					'process_extended_icon',
+				),
 			)
 		);
 
@@ -457,14 +504,23 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 			$image_overlay_output = '';
 			if ( false !== et_pb_check_oembed_provider( esc_url( $src ) ) ) {
 				add_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
-				// Save thumbnail
+				// Save thumbnail.
 				$thumbnail_track_output = et_builder_get_oembed( esc_url( $src ), 'image', true );
 				$image_overlay_output   = $thumbnail_track_output;
-				// Set back to normal
+				// Set back to normal.
+				remove_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
+			} elseif ( false !== et_pb_validate_youtube_url( esc_url( $src ) ) ) {
+				$src = et_pb_normalize_youtube_url( esc_url( $src ) );
+				add_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
+				// Save thumbnail.
+				$thumbnail_track_output = et_builder_get_oembed( esc_url( $src ), 'image', true );
+				$image_overlay_output   = $thumbnail_track_output;
+				// Set back to normal.
 				remove_filter( 'oembed_dataparse', 'et_pb_video_oembed_data_parse', 10, 3 );
 			} else {
 				$thumbnail_track_output = '';
 			}
+
 		}
 
 		// Module classnames
@@ -478,7 +534,7 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 		$background_layout_class_names = et_pb_background_layout_options()->get_background_layout_class( $this->props );
 		$this->add_classname( $background_layout_class_names );
 
-		// Remove automatically added classnames
+		// Remove automatically added classnames.
 		$this->remove_classname(
 			array(
 				'et_pb_module',
@@ -500,7 +556,7 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 		$output = sprintf(
 			'<div class="%1$s"%3$s%4$s%5$s>
 				%2$s
-			</div> <!-- .et_pb_slide -->
+			</div>
 			',
 			$this->module_classname( $render_slug ),
 			( '' !== $video_output ? $video_output : '' ),
@@ -513,4 +569,6 @@ class ET_Builder_Module_Video_Slider_Item extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Video_Slider_Item();
+if ( et_builder_should_load_all_module_data() ) {
+	new ET_Builder_Module_Video_Slider_Item();
+}

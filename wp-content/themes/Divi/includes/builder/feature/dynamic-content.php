@@ -39,12 +39,34 @@ function et_builder_get_product_dynamic_content_fields() {
 			'type'  => 'text',
 		),
 		'product_reviews'                => array(
-			'label' => esc_html__( 'Product Reviews', 'et_builder' ),
-			'type'  => 'text',
+			'label'  => esc_html__( 'Product Reviews', 'et_builder' ),
+			'type'   => 'text',
+			'fields' => array(
+				'enable_title' => array(
+					'label'   => esc_html__( 'Enable Title', 'et_builder' ),
+					'type'    => 'yes_no_button',
+					'options' => array(
+						'on'  => et_builder_i18n( 'Yes' ),
+						'off' => et_builder_i18n( 'No' ),
+					),
+					'default' => 'on',
+				),
+			),
 		),
 		'product_additional_information' => array(
 			'label' => esc_html__( 'Product Additional Information', 'et_builder' ),
 			'type'  => 'text',
+			'fields' => array(
+				'enable_title' => array(
+					'label'   => esc_html__( 'Enable Title', 'et_builder' ),
+					'type'    => 'yes_no_button',
+					'options' => array(
+						'on'  => et_builder_i18n( 'Yes' ),
+						'off' => et_builder_i18n( 'No' ),
+					),
+					'default' => 'on',
+				),
+			),
 		),
 		'product_reviews_tab'            => array(
 			'label' => esc_html__( 'Product Reviews', 'et_builder' ),
@@ -91,7 +113,7 @@ function et_builder_get_built_in_dynamic_content_fields( $post_id ) {
 		}
 	}
 
-	$default_category_type = 'post' === $post_type ? 'category' : "${post_type}_category";
+	$default_category_type = 'post' === $post_type ? 'category' : "{$post_type}_category";
 
 	if ( ! isset( $post_taxonomy_types[ $default_category_type ] ) ) {
 		$default_category_type = 'category';
@@ -728,6 +750,66 @@ function et_builder_get_custom_dynamic_content_fields( $post_id ) {
 	return $custom_fields;
 }
 
+
+/**
+ * Sanitize dynamic content on save.
+ *
+ * Check on save post if the user has the unfiltered_html capability,
+ * if they do, we can bail, because they can save whatever they want,
+ * if they don't, we need to strip the enable_html flag from the dynamic content item,
+ * and then re-encode it, and put the new value back in the post content.
+ *
+ * @since 4.23.2
+ *
+ * @param array $data    An array of slashed post data.
+ *
+ * @return array $data Modified post data.
+ */
+function et_builder_sanitize_dynamic_content_fields( $data ) {
+	// get the post content, and unslash it.
+	$post_content_being_saved = wp_unslash( $data['post_content'] );
+
+	// get the dynamic content items.
+	$dynamic_content_items = et_builder_get_dynamic_contents( $post_content_being_saved );
+
+	// if there are no dynamic content items, we can bail.
+	if ( empty( $dynamic_content_items ) ) {
+		return $data;
+	}
+
+	// if the current user can save unfiltered html, we can bail,
+	// because they can save whatever they want.
+	if ( current_user_can( 'unfiltered_html' ) ) {
+		return $data;
+	}
+
+	// loop through the dynamic content items.
+	foreach ( $dynamic_content_items as $dynamic_content_item ) {
+		// parse the dynamic content item.
+		$dynamic_content_item_parsed = et_builder_parse_dynamic_content( $dynamic_content_item );
+
+		// check if enable_html is set.
+		if ( $dynamic_content_item_parsed->get_settings( 'enable_html' ) !== '' ) {
+
+			// Set the enable_html flag to off.
+			$dynamic_content_item_parsed->set_settings( 'enable_html', 'off' );
+
+			// reserialize the dynamic content item.
+			$re_serialized_dynamic_content_item = $dynamic_content_item_parsed->serialize();
+
+			// replace the content in the post content.
+			$post_content_being_saved = str_replace( $dynamic_content_item, $re_serialized_dynamic_content_item, $post_content_being_saved );
+		}
+	}
+
+	// update the post content, and re-slash it.
+	$data['post_content'] = wp_slash( $post_content_being_saved );
+
+	return $data;
+}
+
+add_filter( 'wp_insert_post_data', 'et_builder_sanitize_dynamic_content_fields', 10, 2 );
+
 /**
  * Get all dynamic content fields.
  *
@@ -936,7 +1018,7 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 
 	$_       = ET_Core_Data_Utils::instance();
 	$def     = 'et_builder_get_dynamic_attribute_field_default';
-	$post    = get_post( $post_id );
+	$post    = ( is_int( $post_id ) && 0 !== $post_id ) ? get_post( $post_id ) : false;
 	$author  = null;
 	$wrapped = false;
 	$is_woo  = false;
@@ -1159,7 +1241,7 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 			$custom_format = $_->array_get( $settings, 'custom_date_format', $def( $post_id, $name, 'custom_date_format' ) );
 
 			if ( 'default' === $format ) {
-				$format = get_option( 'date_format' );
+				$format = strval( get_option( 'date_format' ) );
 			}
 
 			if ( 'custom' === $format ) {
@@ -1442,7 +1524,8 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 				esc_html__( 'There are no reviews yet.', 'et_builder' )
 			);
 
-			$no_reviews = is_array( $comments ) && count( $comments ) > 0 ? '' : $no_reviews_text;
+			$no_reviews    = is_array( $comments ) && count( $comments ) > 0 ? '' : $no_reviews_text;
+			$is_show_title = 'on' === $_->array_get( $settings, 'enable_title', 'on' );
 
 			if ( wp_doing_ajax() ) {
 				$page = get_query_var( 'cpage' );
@@ -1474,12 +1557,14 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 				);
 			}
 
+			$title = $is_show_title
+				? sprintf( '<h2 class="woocommerce-Reviews-title">%s</h2>', et_core_esc_previously( $reviews_title ) )
+				: '';
+
 			$content = sprintf(
 				'
 						<div id="reviews" class="woocommerce-Reviews">
-								<h2 class="woocommerce-Reviews-title">
-									%1$s
-								</h2>
+							%1$s
 							<div id="comments">
 								<ol class="commentlist">
 								%2$s
@@ -1494,11 +1579,11 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 							</div>
 						</div>
 						',
-				et_core_esc_previously( $reviews_title ),
-				et_core_esc_previously( $content ),
-				et_core_esc_previously( $reviews_comment_form ),
-				et_core_esc_previously( $no_reviews ),
-				et_core_esc_previously( $pagination )
+				/* 1$s */ et_core_esc_previously( $title ),
+				/* 2$s */ et_core_esc_previously( $content ),
+				/* 3$s */ et_core_esc_previously( $reviews_comment_form ),
+				/* 4$s */ et_core_esc_previously( $no_reviews ),
+				/* 5$s */ et_core_esc_previously( $pagination )
 			);
 			$wrapped = true;
 			break;
@@ -1509,12 +1594,14 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 			}
 
 			$dynamic_product = ET_Builder_Module_Helper_Woocommerce_Modules::get_product( $post_id );
+			$show_title      = $_->array_get( $settings, 'enable_title', 'on' );
 
 			if ( $dynamic_product ) {
 				$is_woo  = true;
 				$content = ET_Builder_Module_Woocommerce_Additional_Info::get_additional_info(
 					array(
-						'product' => $dynamic_product->get_id(),
+						'product'    => $dynamic_product->get_id(),
+						'show_title' => $show_title,
 					)
 				);
 			} else {
@@ -1525,7 +1612,7 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 		case 'post_meta_key':
 			$meta_key = $_->array_get( $settings, 'meta_key' );
 			$content  = get_post_meta( $post_id, $meta_key, true );
-			$is_fe    = 'fe' === et_builder_get_current_builder_type() ? true : false;
+			$is_fe    = 'fe' === et_builder_get_current_builder_type() && ! is_et_theme_builder_template_preview() ? true : false;
 
 			if ( ( $is_fe && empty( $content ) ) || empty( $meta_key ) ) {
 				$content = '';
@@ -1572,6 +1659,32 @@ function et_builder_filter_resolve_default_dynamic_content( $content, $name, $se
 	return $content;
 }
 add_filter( 'et_builder_resolve_dynamic_content', 'et_builder_filter_resolve_default_dynamic_content', 10, 6 );
+
+/**
+ * Add iFrame to allowed wp_kses_post tags.
+ *
+ * @param array  $tags Allowed tags, attributes, and entities.
+ * @param string $context Context to judge allowed tags by. Allowed values are 'post'.
+ *
+ * @return array
+ */
+function et_builder_wp_kses_post_tags( $tags, $context ) {
+	if ( 'post' === $context && current_user_can( 'unfiltered_html' ) ) {
+		$tags['iframe'] = array(
+			'title'           => true,
+			'width'           => true,
+			'height'          => true,
+			'src'             => true,
+			'allow'           => true,
+			'frameborder'     => true,
+			'allowfullscreen' => true,
+		);
+	}
+
+	return $tags;
+}
+
+add_filter( 'wp_kses_allowed_html', 'et_builder_wp_kses_post_tags', 10, 2 );
 
 /**
  * Resolve custom field dynamic content fields.
@@ -1632,6 +1745,7 @@ function et_builder_filter_resolve_custom_field_dynamic_content( $content, $name
 	return $content;
 }
 add_filter( 'et_builder_resolve_dynamic_content', 'et_builder_filter_resolve_custom_field_dynamic_content', 10, 6 );
+
 
 /**
  * Resolve a dynamic group post content field for use during editing.

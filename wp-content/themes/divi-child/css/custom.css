@@ -135,7 +135,13 @@ p.menu-bio {
     padding-bottom: 2em;
 }
 
+.about-counter1{
+    display: flex;
+}
 
+/* .about-counter2{
+    display: flex;
+} */
 
 /* ---------Cpt our team --------second part of about page--------------------- */
 
@@ -325,10 +331,10 @@ p.about_our_team_bio {
 
 /* -------------------home---------------------- */
 
-.home-section{
+/* .home-section{
     background-image: url(images/home-bg.jpg);
     background-position:cover ;
     background-repeat: no-repeat ;
     background-size: 14px ;
 
-}
+} */

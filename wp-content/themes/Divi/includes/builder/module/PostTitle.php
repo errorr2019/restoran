@@ -472,7 +472,6 @@ class ET_Builder_Module_Post_Title extends ET_Builder_Module {
 			$post_id = 0;
 		}
 
-		$this->process_additional_options( $render_slug );
 
 		$output                    = '';
 		$featured_image_output     = '';
@@ -480,7 +479,7 @@ class ET_Builder_Module_Post_Title extends ET_Builder_Module {
 
 		if ( $post_id && $multi_view->has_value( 'featured_image', 'on' ) && ( 'above' === $featured_placement || 'below' === $featured_placement ) ) {
 			$post_thumbnail_id    = get_post_thumbnail_id( $post_id );
-			$featured_image_src   = et_()->array_get( wp_get_attachment_image_src( $post_thumbnail_id, 'full' ), 0 );
+			$featured_image_src   = is_et_theme_builder_template_preview() ? ET_BUILDER_PLACEHOLDER_LANDSCAPE_IMAGE_DATA : et_()->array_get( wp_get_attachment_image_src( $post_thumbnail_id, 'full' ), 0 );
 			$featured_image_alt   = get_post_meta( $post_thumbnail_id, '_wp_attachment_image_alt', true );
 			$featured_image_title = get_the_title( $post_thumbnail_id );
 			$featured_image_class = et_pb_media_options()->get_image_attachment_class( $this->props, '', $post_thumbnail_id );
@@ -723,6 +722,8 @@ class ET_Builder_Module_Post_Title extends ET_Builder_Module {
 			'<div%3$s class="%2$s" %8$s %9$s %10$s>
 				%4$s
 				%7$s
+				%11$s
+				%12$s
 				%5$s
 				<div class="et_pb_title_container">
 					%1$s
@@ -738,7 +739,9 @@ class ET_Builder_Module_Post_Title extends ET_Builder_Module {
 			$video_background,
 			et_core_esc_previously( $data_background_layout ),
 			et_core_esc_previously( $data_background_layout_hover ),
-			et_core_esc_previously( $muti_view_data_attr ) // #10
+			et_core_esc_previously( $muti_view_data_attr ), // #10
+			et_core_esc_previously( $this->background_pattern() ), // #11
+			et_core_esc_previously( $this->background_mask() ) // #12
 		);
 
 		return $output;
@@ -786,4 +789,6 @@ class ET_Builder_Module_Post_Title extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Post_Title();
+if ( et_builder_should_load_all_module_data() ) {
+	new ET_Builder_Module_Post_Title();
+}

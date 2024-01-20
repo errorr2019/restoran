@@ -256,8 +256,16 @@ class ET_Builder_Module_Posts_Navigation extends ET_Builder_Module {
 		// Set current post as global $post
 		$post = get_post( $post_id ); // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
 
-		// Get next post
-		$next_post = get_next_post( $in_same_term, '', $args['taxonomy_name'] );
+		// Get next post.
+		if ( is_et_theme_builder_template_preview() ) {
+			$next_post = (object) array(
+				'post_title' => esc_html__( 'Next Post', 'et_builder' ),
+				'post_date'  => current_time( 'mysql', false ),
+				'ID'         => 0,
+			);
+		} else {
+			$next_post = get_next_post( $in_same_term, '', $args['taxonomy_name'] );
+		}
 
 		$next = new stdClass();
 
@@ -280,8 +288,16 @@ class ET_Builder_Module_Posts_Navigation extends ET_Builder_Module {
 			$next->permalink = $next_permalink;
 		}
 
-		// Get prev post
-		$prev_post = get_previous_post( $in_same_term, '', $args['taxonomy_name'] );
+		// Get prev post.
+		if ( is_et_theme_builder_template_preview() ) {
+			$prev_post = (object) array(
+				'post_title' => esc_html__( 'Previous Post', 'et_builder' ),
+				'post_date'  => current_time( 'mysql', false ),
+				'ID'         => 0,
+			);
+		} else {
+			$prev_post = get_previous_post( $in_same_term, '', $args['taxonomy_name'] );
+		}
 
 		$prev = new stdClass();
 
@@ -383,6 +399,8 @@ class ET_Builder_Module_Posts_Navigation extends ET_Builder_Module {
 						<?php
 							echo et_core_esc_previously( $parallax_image_background );
 							echo et_core_esc_previously( $video_background );
+							echo et_core_esc_previously( $this->background_pattern() );
+							echo et_core_esc_previously( $this->background_mask() );
 						?>
 						<span class="meta-nav">&larr; </span><span class="nav-label"<?php $multi_view->render_attrs( array( 'content' => '{{prev_text}}' ), true ); ?>><?php echo esc_html( $posts_navigation['prev']->title ); ?></span>
 					</a>
@@ -408,6 +426,8 @@ class ET_Builder_Module_Posts_Navigation extends ET_Builder_Module {
 						<?php
 							echo et_core_esc_previously( $parallax_image_background );
 							echo et_core_esc_previously( $video_background );
+							echo et_core_esc_previously( $this->background_pattern() );
+							echo et_core_esc_previously( $this->background_mask() );
 						?>
 						<span class="nav-label"<?php $multi_view->render_attrs( array( 'content' => '{{next_text}}' ), true ); ?>><?php echo esc_html( $posts_navigation['next']->title ); ?></span><span class="meta-nav"> &rarr;</span>
 					</a>
@@ -450,4 +470,6 @@ class ET_Builder_Module_Posts_Navigation extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Posts_Navigation();
+if ( et_builder_should_load_all_module_data() ) {
+	new ET_Builder_Module_Posts_Navigation();
+}

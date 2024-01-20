@@ -189,6 +189,20 @@ export const getStickyStyles = (id, $module, $placeholder) => {
     return parseFloat($stickyStyleDom.css(marginPropName)) - parseFloat($normalModule.css(marginPropName));
   };
 
+  /**
+   * Equalize Column Heights :: If the parent container is an equal column(Flexbox), temporary hide
+   * the placeholder module and the original modules to restore(expand) the width of the $stickyStyleDom.
+   * We insert two clones i.e data-sticky-style-dom-id and data-sticky-placeholder-id of the module at the
+   * original location of the module which causes columns(flex items) to shrink to fit in the row 
+   * i.e .et_pb_equal_columns flex container.
+   */
+  const isEqualColumns = $module.parent().hasClass('et_pb_equal_columns');
+
+  if(isEqualColumns) {
+    $module.hide();
+    $placeholder.hide();
+  }
+
   // Measure sticky style DOM properties
   const styles = {
     height: $stickyStyleDom.outerHeight(),
@@ -197,6 +211,12 @@ export const getStickyStyles = (id, $module, $placeholder) => {
     marginLeft: getMarginStyle('Left'),
     padding: $stickyStyleDom.css('padding'),
   };
+
+  // display module and placeholder.
+  if(isEqualColumns) {
+    $module.show();
+    $placeholder.show();
+  }
 
   // Immediately remove the cloned DOM
   $(`.et_pb_sticky_style_dom[data-sticky-style-dom-id="${id}"]`).remove();
@@ -260,6 +280,14 @@ export const getClosestStickyModuleOffsetTop = $target => {
       return;
     }
 
+    // Ignore if $target is sticky module (that sticks to top; stuck to bottom check above has
+    // made sure of it) - otherwise the auto-generate offset will subtract the element's offset
+    // and causing the scroll never reaches $target location.
+    // @see https://github.com/elegantthemes/Divi/issues/23240
+    if ($target.is(get(stickyModule, 'selector'))) {
+      return;
+    }
+
     // Ignore if sticky module's right edge doesn't collide with target's left edge
     if (get(stickyModule, 'offsets.right', 0) < offset.left) {
       return;
@@ -304,4 +332,34 @@ export const getClosestStickyModuleOffsetTop = $target => {
   }
 
   return closestStickyOffsetTop;
+};
+
+/**
+ * Determine if the target is in sticky state.
+ *
+ * @since 4.9.5
+ *
+ * @param {object} $target
+ *
+ * @returns {bool}
+ */
+export const isTargetStickyState = $target => {
+  const stickyModules = get(window.ET_FE, 'stores.sticky.modules', {});
+
+  let isStickyState = false;
+
+  forEach(stickyModules, stickyModule => {
+    const isTarget             = $target.is(get(stickyModule, 'selector'));
+    const {isSticky, isPaused} = stickyModule;
+
+    // If the target is in sticky state and not paused, set isStickyState to true and exit iteration.
+    // Elements can have a sticky limit (ex: section) in which case they can be sticky but paused.
+    if (isTarget && isSticky && !isPaused) {
+      isStickyState = true;
+
+      return false; // Exit iteration.
+    }
+  });
+
+  return isStickyState;
 };

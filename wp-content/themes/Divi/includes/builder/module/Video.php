@@ -160,6 +160,17 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 				'mobile_options' => true,
 				'sticky'         => true,
 			),
+			'font_icon'      => array(
+				'label'          => esc_html__( 'Icon', 'et_builder' ),
+				'toggle_slug'    => 'play_icon',
+				'type'           => 'select_icon',
+				'class'          => array( 'et-pb-font-icon' ),
+				'description'    => esc_html__( 'Choose an icon to display with your blurb.', 'et_builder' ),
+				'mobile_options' => true,
+				'hover'          => 'tabs',
+				'sticky'         => true,
+				'tab_slug'       => 'advanced',
+			),
 			'__video'                 => array(
 				'type'                => 'computed',
 				'computed_callback'   => array( 'ET_Builder_Module_Video', 'get_video' ),
@@ -250,6 +261,7 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 		return $fields;
 	}
 
+
 	static function get_video( $args = array(), $conditional_tags = array(), $current_page = array() ) {
 		$defaults = array(
 			'src'      => '',
@@ -266,6 +278,9 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 
 		if ( false !== et_pb_check_oembed_provider( esc_url( $args['src'] ) ) ) {
 			$video_src = et_builder_get_oembed( esc_url( $args['src'] ) );
+		} elseif ( false !== et_pb_validate_youtube_url( esc_url( $args['src'] ) ) ) {
+			$args['src'] = et_pb_normalize_youtube_url( esc_url( $args['src'] ) );
+			$video_src   = et_builder_get_oembed( esc_url( $args['src'] ) );
 		} else {
 			$video_src = sprintf(
 				'
@@ -360,6 +375,21 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 			)
 		);
 
+		// Play Icon Styles.
+		$this->generate_styles(
+			array(
+				'utility_arg'    => 'icon_font_family_and_content',
+				'render_slug'    => $render_slug,
+				'base_attr_name' => 'font_icon',
+				'important'      => true,
+				'selector'       => '%%order_class%% .et_pb_video_overlay .et_pb_video_play:before',
+				'processor'      => array(
+					'ET_Builder_Module_Helper_Style_Processor',
+					'process_extended_icon',
+				),
+			)
+		);
+
 		// Icon Size.
 		if ( 'off' !== $use_icon_font_size ) {
 			// Icon Font Size.
@@ -417,6 +447,8 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 			'<div%2$s class="%3$s">
 				%6$s
 				%5$s
+				%7$s
+				%8$s
 				%1$s
 				%4$s
 			</div>',
@@ -425,7 +457,9 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 			$this->module_classname( $render_slug ),
 			$muti_view_video_overlay,
 			$video_background,
-			$parallax_image_background
+			$parallax_image_background,
+			et_core_esc_previously( $this->background_pattern() ), // #7
+			et_core_esc_previously( $this->background_mask() ) // #8
 		);
 
 		return $output;
@@ -466,4 +500,6 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Video();
+if ( et_builder_should_load_all_module_data() ) {
+	new ET_Builder_Module_Video();
+}
